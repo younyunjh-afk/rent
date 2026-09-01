@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>임대매장 유통수수료율 월별 현황 | INDONG FN</title>
+<style>
+  :root{
+    --pink:#ec4899; --pink-bg:#fdf2f8;
+    --cyan:#06b6d4; --cyan-bg:#ecfeff;
+    --purple:#8b5cf6; --purple-bg:#f5f3ff;
+    --text:#111827; --sub:#6b7280; --line:#e5e7eb; --card:#ffffff; --bg:#f4f5f7;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;background:var(--bg);color:var(--text);padding:32px;}
+  .wrap{max-width:1280px;margin:0 auto;}
+  header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;padding-bottom:20px;border-bottom:3px solid var(--text);}
+  header h1{font-size:25px;margin:0 0 6px;}
+  header .sub{color:#000;font-size:16px;}
+  header .company{font-size:18px;font-weight:700;text-align:right;}
+  header .unit{color:#000;font-size:15px;text-align:right;margin-top:4px;}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+  .kpi{background:var(--card);border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .kpi .label{font-size:15px;color:#000;margin-bottom:6px;}
+  .kpi .value{font-size:25px;font-weight:700;color:#000;}
+  .kpi .value.blue{color:#000;}
+  .kpi .value.orange{color:#000;}
+
+  .brand-section{background:var(--card);border-radius:14px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;position:relative;}
+  .unit-note{text-align:right;font-size:13px;color:#000;padding:8px 22px 0;}
+  .brand-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;cursor:pointer;border-left:6px solid var(--accent);}
+  .brand-header:hover{background:var(--accent-bg);}
+  .brand-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:#000;}
+  .brand-title .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);}
+  .brand-stats{display:flex;gap:26px;font-size:16px;color:#000;}
+  .brand-stats b{color:#000;font-size:17px;}
+  .brand-stats .rate{color:#000;font-weight:700;}
+  .chevron{transition:transform .2s;color:#000;}
+  .brand-section.open .chevron{transform:rotate(180deg);}
+  .brand-body{max-height:0;overflow:hidden;transition:max-height .25s ease;}
+  .brand-section.open .brand-body{max-height:4000px;}
+
+  .table-scroll{overflow-x:auto;padding:0 18px 20px;}
+  table{border-collapse:collapse;width:100%;min-width:1250px;font-size:15.5px;table-layout:fixed;}
+  thead tr.grp th{width:10%;}
+  thead tr.grp th{background:var(--accent);color:#fff;font-weight:700;padding:8px 6px;text-align:center;border:1px solid rgba(255,255,255,.25);}
+  thead tr.sub th{background:#f8f9fb;color:#000;font-weight:600;padding:6px;text-align:center;border:1px solid var(--line);font-size:14.5px;}
+  tbody td{padding:7px 6px;text-align:center;border:1px solid var(--line);white-space:nowrap;color:#000;overflow:hidden;text-overflow:ellipsis;}
+  tbody td.name, td.rate-label{white-space:normal;overflow:visible;text-overflow:clip;}
+  tbody tr.sales-row td{background:#fff;}
+  tbody tr.rate-row td{background:#fafbfc;color:#000;font-size:14.5px;}
+  td.rate-label{text-align:left;padding-left:10px;color:#000;}
+  tbody td.name{text-align:left;padding-left:10px;font-weight:700;vertical-align:middle;background:#fff;}
+  tbody td.name .code-sub{display:block;font-weight:400;font-size:12.5px;color:#000;margin-top:2px;}
+  tbody tr.sales-row td.rate-label{font-style:normal;font-weight:600;}
+  tbody tr.rate-row td.rate-label{font-style:italic;}
+  td.num{text-align:right;padding-right:10px;font-variant-numeric:tabular-nums;}
+  tbody tr.sales-row:hover td, tbody tr.sales-row:hover + tr.rate-row td{background:var(--accent-bg);}
+  td.total-col{font-weight:700;background:#f3f4f6 !important;}
+  .rate-high{color:#dc2626 !important;font-weight:700 !important;background:#fee2e2 !important;box-shadow:inset 0 0 0 1px #fca5a5 !important;position:relative;z-index:1;}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>▶ 임대매장 유통수수료율 월별 현황</h1>
+      <div class="sub">2026년 1월 ~ 7월 · 매장별 월별 매출 및 수수료율</div>
+    </div>
+    <div>
+      <div class="company">INDONG FN</div>
+      <div class="unit">(단위: 백만원, VAT+)</div>
+    </div>
+  </header>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div id="brandSections"></div>
+</div>
+
+<script>
+const DATA = {"쉬즈미스": [{"code": "S41004", "name": "타임스퀘어", "open_date": "2014-09-05", "contract_margin": 0.22, "min_sales": 63000000.000000015, "rent": 13860000.000000002, "sales": [183, 179, 186, 151, 207, 140, 126], "total_sales": 1173, "growth": [-0.005405405405405406, -0.12682926829268293, -0.065, 0.04861111111111111, 0.3269230769230769, -0.027777777777777776, -0.09352517985611511], "total_growth": 0.0008525149190110827, "rates": [0.24829998215717075, 0.24659656134015895, 0.24639572423699385, 0.25147990960116284, 0.24565925243294617, 0.25811321592085823, 0.2583162259549807], "total_rate": 0.2499314169313107, "total_o": 1173390190, "total_p": 880123117.2}, {"code": "S42001", "name": "스타필드고양", "open_date": "2017-08-01", "contract_margin": 0.25, "min_sales": 109332636.00000001, "rent": 27333159, "sales": [145, 286, 137, 88, 85, 108, 82], "total_sales": 932, "growth": [-0.5, 0.9455782312925171, 0.1810344827586207, -0.14563106796116504, 0.024096385542168676, 0.44, 0], "total_growth": 0.0390625, "rates": [0.2991398881005306, 0.2855345145564814, 0.3007422178726046, 0.3756119195099027, 0.40368436331709523, 0.313453128384771, 0.40634038733126787], "total_rate": 0.3230816667979871, "total_o": 931563400, "total_p": 630592344}, {"code": "S42002", "name": "스타필드시티위례", "open_date": "2018-12-14", "contract_margin": 0.24, "min_sales": 49619835.83333334, "rent": 11908760.600000001, "sales": [77, 60, 79, 61, 70, 80, 49], "total_sales": 477, "growth": [0.5294117647058824, 0.22448979591836735, 0.06756756756756757, -0.08955223880597014, 0.25, 0.45454545454545453, -0.0392156862745098], "total_growth": 0.18362282878411912, "rates": [0.30258847297016267, 0.31465573946478176, 0.30005217644526605, 0.3124332624941364, 0.30455140096232325, 0.30012877612326305, 0.3529375578753279], "total_rate": 0.3099951112738729, "total_o": 476934060, "total_p": 329086833}, {"code": "S41020", "name": "타임스트림", "open_date": "2021-07-22", "contract_margin": 0.21, "min_sales": 31428571, "rent": 6599999.91, "sales": [38, 50, 57, 52, 50, 44, 29], "total_sales": 320, "growth": [0.8095238095238095, 0.1111111111111111, 0.78125, 0.20930232558139536, 0.02040816326530612, 0.41935483870967744, -0.12121212121212122], "total_growth": 0.25984251968503935, "rates": [0.2998700197202404, 0.27166195340874544, 0.260538587054415, 0.2646262994923365, 0.26864486242897534, 0.2811164177755687, 0.3461473249809678], "total_rate": 0.2795228181939666, "total_o": 319532300, "total_p": 230215731}, {"code": "S42008", "name": "메타폴리스몰", "open_date": "2022-04-01", "contract_margin": 0.2, "min_sales": 33000000, "rent": 6600000, "sales": [84, 70, 75, 71, 90, 63, 42], "total_sales": 495, "growth": [-0.2, -0.24731182795698925, -0.27884615384615385, -0.14457831325301204, 0.2328767123287671, -0.03076923076923077, -0.3225806451612903], "total_growth": -0.15384615384615385, "rates": [0.26045779552749804, 0.2643509816319479, 0.25378211233713344, 0.2569801023453795, 0.23764847904320963, 0.2868184442062127, 0.31875935970366454], "total_rate": 0.2635857416806239, "total_o": 494862530, "total_p": 364423823}, {"code": "S42004", "name": "롯데몰수지점", "open_date": "2019-08-30", "contract_margin": 0.23, "min_sales": 30000000, "rent": 6900000, "sales": [62, 30, 40, 40, 42, 60, 46], "total_sales": 320, "growth": [0.08620689655172414, -0.4117647058823529, -0.1276595744680851, -0.09090909090909091, 0.05, 1, -0.3783783783783784], "total_growth": -0.06395348837209303, "rates": [0.30332699052610357, 0.3657751280057121, 0.3271410922968042, 0.32560691337354586, 0.319598462533228, 0.3001534487941807, 0.32838621175427074], "total_rate": 0.3201113812031757, "total_o": 319973200, "total_p": 217546137}, {"code": "S42003", "name": "스타필드시티부천", "open_date": "2019-09-03", "contract_margin": 0.24, "min_sales": 51256438.75000001, "rent": 12301545.3, "sales": [86, 80, 84, 72, 80, 60, 64], "total_sales": 526, "growth": [-0.17307692307692307, -0.09090909090909091, 0.05, -0.13253012048192772, 0.25, 0, -0.1232876712328767], "total_growth": -0.04710144927536232, "rates": [0.31462314901984423, 0.3216016304679987, 0.31523948922304446, 0.3225290445493876, 0.3186936647994968, 0.34390260599092126, 0.3455604050580503], "total_rate": 0.32457672247104363, "total_o": 526482000, "total_p": 355598198}, {"code": "S41017", "name": "스타필드코엑스몰", "open_date": "2020-02-01", "contract_margin": 0.25, "min_sales": 239978892, "rent": 59994723, "sales": [320, 261, 619, 305, 386, 346, 280], "total_sales": 2516, "growth": [-0.1919191919191919, -0.14705882352941177, 0.31982942430703626, -0.14084507042253522, 0.25732899022801303, 0.14950166112956811, 0.18143459915611815], "total_growth": 0.061577393504850274, "rates": [0.2937087730283323, 0.2972606703604189, 0.28751241570238395, 0.29552401605587597, 0.291099265964197, 0.29398963065347705, 0.29648161471065937], "total_rate": 0.29272016802521017, "total_o": 2516003400, "total_p": 1779518462}, {"code": "S42005", "name": "스타필드안성", "open_date": "2020-09-15", "contract_margin": 0.25, "min_sales": 107438532, "rent": 26859633, "sales": [109, 126, 76, 70, 75, 74, 43], "total_sales": 573, "growth": [-0.026785714285714284, 0, -0.2897196261682243, 0.029411764705882353, 0, -0.075, -0.31746031746031744], "total_growth": -0.0919175911251981, "rates": [0.32220171991206414, 0.3151660378199911, 0.44765918628228285, 0.4831658266337795, 0.45032677191535775, 0.45930026972963556, 0.7767387119315474], "total_rate": 0.42571772890920967, "total_o": 573097300, "total_p": 329119619}, {"code": "S42007", "name": "스타필드하남", "open_date": "2021-03-26", "contract_margin": 0.25, "min_sales": 134891848, "rent": 33722962, "sales": [159, 229, 187, 103, 172, 112, 152], "total_sales": 1115, "growth": [0.006329113924050633, 0.09047619047619047, 0.016304347826086956, 0.11827956989247312, 0.4700854700854701, -0.22758620689655173, -0.055900621118012424], "total_growth": 0.04400749063670412, "rates": [0.29614486099197734, 0.2882779469772975, 0.2925784145221545, 0.38495061936185315, 0.3093249344795326, 0.3346642524085516, 0.299472951932514], "total_rate": 0.3085388035394051, "total_o": 1114639300, "total_p": 770729824}, {"code": "S42009", "name": "스타필드수원", "open_date": "2024-01-24", "contract_margin": 0.25, "min_sales": 113812256, "rent": 28453064, "sales": [125, 208, 95, 75, 156, 83, 192], "total_sales": 933, "growth": [-0.13194444444444445, -0.22388059701492538, -0.020618556701030927, -0.0963855421686747, 0.3565217391304348, -0.6512605042016807, 0.6], "total_growth": -0.12300469483568074, "rates": [0.3195515369056502, 0.3008541251072113, 0.3842029789240179, 0.47946697246972847, 0.3101143385646984, 0.43673837746074395, 0.30531342618605284], "total_rate": 0.3407936699949963, "total_o": 933301000, "total_p": 615237927}, {"code": "S42501", "name": "스퀘어원", "open_date": "2015-09-10", "contract_margin": 0.14, "min_sales": 39285714.28571428, "rent": 5500000, "sales": [83, 81, 105, 85, 91, 75, 54], "total_sales": 574, "growth": [-0.07777777777777778, 0.0125, 0.16666666666666666, 0.0625, 0.03409090909090909, -0.0625, -0.25], "total_growth": -0.010344827586206896, "rates": [0.17764332392871784, 0.17842361749850733, 0.1707759073570727, 0.17715044382866807, 0.17757295611863844, 0.18736391929455887, 0.2089335906070543], "total_rate": 0.18064666585683264, "total_o": 573780100, "total_p": 470128638}, {"code": "S41027", "name": "마곡원그로브", "open_date": "2025-05-23", "contract_margin": 0.14, "min_sales": 42672142.85714286, "rent": 5974100.000000001, "sales": [73, 71, 52, 55, 64, 64, 85], "total_sales": 465, "growth": ["#DIV/0!", "#DIV/0!", "#DIV/0!", "#DIV/0!", 7, 1.4615384615384615, 0.9318181818181818], "total_growth": 4.948717948717949, "rates": [0.21505305933812902, 0.2438206790798334, 0.29380881277542314, 0.41429613159626655, 0.355013604883184, 0, 0.20832462556190712], "total_rate": 0.27118495640636153, "total_o": 465239900, "total_p": 339073838}, {"code": "S41028", "name": "이스트폴구의", "open_date": "2025-05-28", "contract_margin": 0.15, "min_sales": 56667000, "rent": 8500050, "sales": [90, 76, 68, 66, 88, 73, 79], "total_sales": 539, "growth": ["#DIV/0!", "#DIV/0!", "#DIV/0!", "#DIV/0!", 16.6, 0.35185185185185186, 0.16176470588235295], "total_growth": 3.251968503937008, "rates": [0.2065741407274101, 0.2162285426116698, 0.21979933916206695, 0.2207203137039495, 0.3503285546043393, 0, 0.2161784890917825], "total_rate": 0.23725486388176797, "total_o": 539332600, "total_p": 411373317.4}, {"code": "S41022", "name": "아이파크고척", "open_date": "2022-12-22", "contract_margin": 0.16, "min_sales": 26812500.000000004, "rent": 4290000, "sales": [48, 27, 44, 43, 42, 39, 24], "total_sales": 267, "growth": [0.09090909090909091, -0.20588235294117646, 0.047619047619047616, 0.30303030303030304, 0.024390243902439025, 0.11428571428571428, -0.07692307692307693], "total_growth": 0.047058823529411764, "rates": [0.21837005100162998, 0.2662122461659079, 0.22300897944505005, 0.22122909625343667, 0.22188539039211186, 0.23088181753101322, 0.3085075717489354], "total_rate": 0.23487263053698648, "total_o": 267006700, "total_p": 204294134}, {"code": "S36415", "name": "스타필드문현", "open_date": "2024-08-13", "contract_margin": 0.12, "min_sales": 18975000, "rent": 2277000, "sales": [34, 22, 25, 19, 27, 20, 16], "total_sales": 164, "growth": [0.6190476190476191, -0.041666666666666664, 0.19047619047619047, -0.09523809523809523, 0.8, 0.1111111111111111, 0.23076923076923078], "total_growth": 0.23308270676691728, "rates": [0.20169936252730436, 0.23531478913306303, 0.22192579269394197, 0.25017446620898154, 0.21738355592965308, 0.2415100735623802, 0], "total_rate": 0.23103069210187477, "total_o": 164260500, "total_p": 126311283}, {"code": "S32043", "name": "신세계프리미엄파주", "open_date": "2019-09-24", "contract_margin": 0.17, "min_sales": 43000000, "rent": 7326000.000000001, "sales": [88, 90, 65, 74, 90, 59, 36], "total_sales": 503, "growth": [-0.16981132075471697, -0.08163265306122448, -0.4881889763779528, -0.08641975308641975, 0.08433734939759036, 0, -0.3684210526315789], "total_growth": -0.1783960720130933, "rates": [0.21725861505769928, 0.21471599903707805, 0.22694995053733047, 0.22611140331239865, 0.21249562932232946, 0.2157275899522032, 0], "total_rate": 0.22455673610955773, "total_o": 502511720, "total_p": 389669328.3}], "리스트": [{"code": "T41002", "name": "타임스퀘어", "open_date": "2013-01-01", "contract_margin": 0.22, "min_sales": 63000000.000000015, "rent": 13860000.000000002, "sales": [163, 279, 151, 146, 156, 142, 140], "total_sales": 1178, "growth": [-0.07386363636363637, 0.6411764705882353, 0, -0.12048192771084337, 0.04, -0.1069182389937107, 0.06870229007633588], "total_growth": 0.06708975521305531, "rates": [0.24377230122185745, 0.23375865137557184, 0.24455564489710835, 0.2428150320114001, 0.24388086554732724, 0.24741499553918633, 0.2494159020424478], "total_rate": 0.2425033712833734, "total_o": 1177741400, "total_p": 892135140}, {"code": "T42501", "name": "스퀘어원", "open_date": "2015-09-10", "contract_margin": 0.14, "min_sales": 47142857.14285714, "rent": 6600000, "sales": [83, 85, 109, 76, 81, 64, 56], "total_sales": 554, "growth": [-0.056818181818181816, 0.0625, 0.2247191011235955, 0.05555555555555555, -0.047058823529411764, -0.09859154929577464, 0.12], "total_growth": 0.03551401869158879, "rates": [0.18438988574693282, 0.18254824025284788, 0.1737734486411977, 0.1911611726073762, 0.1883564489718509, 0.20487710503374423, 0.21839584525139566], "total_rate": 0.1893292332196892, "total_o": 554244800, "total_p": 449310057}, {"code": "T42010", "name": "타임테라스", "open_date": "2022-04-01", "contract_margin": 0.19, "min_sales": 20263158, "rent": 3850000.02, "sales": [64, 72, 94, 67, 73, 57, 54], "total_sales": 481, "growth": [-0.2073170731707317, -0.14285714285714285, 0.08045977011494253, 0.09836065573770492, 0.2807017543859649, -0.24, 0.3170731707317073], "total_growth": -0.01026694045174538, "rates": [0.23383462250147735, 0.2252395060283925, 0.21471300039952057, 0.22441441982095245, 0.21724547518320225, 0.24313310623532147, 0.24044472254385107], "total_rate": 0.22684972953359184, "total_o": 480632700, "total_p": 371601302}, {"code": "T41019", "name": "타임스트림", "open_date": "2021-07-22", "contract_margin": 0.2, "min_sales": 27500000, "rent": 5500000, "sales": [31, 40, 40, 37, 50, 49, 36], "total_sales": 284, "growth": [-0.225, 0.05263157894736842, -0.16666666666666666, 0.027777777777777776, 0.16279069767441862, 0.2894736842105263, 0.058823529411764705], "total_growth": 0.021660649819494584, "rates": [0.2927976559938631, 0.26514795122590273, 0.2607046480855786, 0.26435138564273786, 0.2502535868936204, 0.25524408300639845, 0.2832714207862107], "total_rate": 0.2654071291351485, "total_o": 284267300, "total_p": 208820732}, {"code": "T41006", "name": "롯데몰월드점", "open_date": "2014-08-01", "contract_margin": 0.26, "min_sales": null, "rent": null, "sales": [162, 138, 139, 116, 146, 117, 105], "total_sales": 924, "growth": [-0.39097744360902253, -0.11538461538461539, -0.27979274611398963, -0.2795031055900621, 0.03546099290780142, -0.11363636363636363, -0.2391304347826087], "total_growth": -0.22240943555181128, "rates": [0.28511431380264385, 0.28584070194772426, 0.28340974056458723, 0.2879732313740292, 0.28114481223157173, 0.28711983428027876, 0.29142092651072815], "total_rate": 0.28567011487254323, "total_o": 923556901, "total_p": 659724295}, {"code": "T42005", "name": "롯데몰수지점", "open_date": "2019-08-30", "contract_margin": 0.22, "min_sales": 32727272.727272727, "rent": 7200000, "sales": [40, 31, 34, 38, 40, 54, 29], "total_sales": 267, "growth": [0.1111111111111111, 0, -0.05555555555555555, -0.09523809523809523, -0.06976744186046512, 0.4594594594594595, -0.12121212121212122], "total_growth": 0.031007751937984496, "rates": [0.2981127915638009, 0.33139890141509887, 0.3030496770597111, 0.29501505798703465, 0.29157277343132604, 0.2801168329721213, 0.35389924791954075], "total_rate": 0.30362316464929195, "total_o": 267203700, "total_p": 186074467}, {"code": "T42001", "name": "스타필드고양", "open_date": "2017-08-01", "contract_margin": 0.25, "min_sales": 131478172, "rent": 32869543, "sales": [122, 269, 147, 76, 110, 110, 63], "total_sales": 897, "growth": [-0.45982142857142855, 1.6372549019607843, 0.6333333333333333, 0.0410958904109589, 0.42857142857142855, -0.07563025210084033, 0.05], "total_growth": 0.20268456375838925, "rates": [0.34001463680725075, 0.292291666125129, 0.3121221168497357, 0.5308688201525148, 0.3767758242017867, 0.37659542660026757, 0.6502491021359713], "total_rate": 0.36819475672540747, "total_o": 897473500, "total_p": 567028463}, {"code": "T42004", "name": "스타필드하남", "open_date": "2018-12-20", "contract_margin": 0.25, "min_sales": 177639981.20000002, "rent": 44409995.300000004, "sales": [242, 188, 167, 104, 146, 104, 127], "total_sales": 1078, "growth": [-0.06923076923076923, -0.2958801498127341, 0.12080536912751678, -0.38461538461538464, -0.21081081081081082, -0.3953488372093023, -0.5126582278481012], "total_growth": -0.24411764705882352, "rates": [0.28393150498315345, 0.2913275868840417, 0.31001265434833103, 0.48643368393174313, 0.35158249940388875, 0.48940010001872936, 0.4032378356297821], "total_rate": 0.35183137619155314, "total_o": 1078434900, "total_p": 699007665}, {"code": "T42008", "name": "스타필드시티부천", "open_date": "2021-02-25", "contract_margin": 0.24, "min_sales": 60888437.50000001, "rent": 14613225.000000002, "sales": [53, 28, 29, 23, 33, 44, 34], "total_sales": 244, "growth": [0.9629629629629629, -0.4716981132075472, 0, -0.17857142857142858, -0.13157894736842105, 0.1891891891891892, 0.7], "total_growth": 0.05172413793103448, "rates": [0.38534581762892706, 0.7228397137887698, 0.6760883687620702, 0.8641421931863025, 0.6012376613286009, 0.4673446934609091, 0.6042413261620443], "total_rate": 0.5781204865544922, "total_o": 244256300, "total_p": 103046729}, {"code": "T42011", "name": "스타필드수원", "open_date": "2024-01-24", "contract_margin": 0.25, "min_sales": 120435792, "rent": 30108948, "sales": [112, 186, 174, 87, 105, 82, 180], "total_sales": 926, "growth": [-0.30864197530864196, -0.03626943005181347, -0.5056497175141242, -0.275, -0.08695652173913043, -0.20388349514563106, 0.7821782178217822], "total_growth": -0.19250871080139373, "rates": [0.3313869605299068, 0.29671713344272066, 0.29822830818306756, 0.42166565957319224, 0.3521385984118477, 0.4456796683455231, 0.2995615009901321], "total_rate": 0.3329397192411889, "total_o": 926133000, "total_p": 617786539}, {"code": "T42012", "name": "스타필드안성", "open_date": "2024-11-01", "contract_margin": 0.25, "min_sales": 104914836, "rent": 26228709, "sales": [157, 100, 130, 72, 90, 85, 65], "total_sales": 699, "growth": [-0.07647058823529412, -0.13043478260869565, 0.2871287128712871, 0.058823529411764705, -0.1509433962264151, 0.1643835616438356, -0.09722222222222222], "total_growth": -0.00851063829787234, "rates": [0.3122382582765352, 0.348891674594102, 0.3193607774069004, 0.47535684170818027, 0.38168964545740924, 0.4058869556942172, 0.5293261846332769], "total_rate": 0.37609824830814675, "total_o": 699381000, "total_p": 436345031}, {"code": "T41024", "name": "스타필드코엑스", "open_date": "2025-03-14", "contract_margin": 0.24, "min_sales": null, "rent": null, "sales": [91, 70, 187, 81, 113, 93, 96], "total_sales": 731, "growth": [0, 0, 3.1555555555555554, -0.13829787234042554, 0.4125, 0.2236842105263158, 0.4117647058823529], "total_growth": 1.0137741046831956, "rates": [0.3217196438485286, 0.3395306231345626, 0.3000268756258132, 0.3298617396518908, 0.31229494577323513, 0.3216383169299488, 0.32030044071414565], "total_rate": 0.3171085464361031, "total_o": 731008800, "total_p": 499199662}, {"code": "T42014", "name": "스타필드빌리지운정", "open_date": "2026-03-04", "contract_margin": 0.22, "min_sales": null, "rent": null, "sales": [0, 0, 7, 33, 48, 46, 44], "total_sales": 178, "growth": [0, 0, 0, 0, 0, 0, 0], "total_growth": 0, "rates": [0, 0, 0.28829074081794304, 0.27248449912807593, 0.2747762023735165, 0.26807083511143237, 0.2780828627392584], "total_rate": 0.27397727234387603, "total_o": 177836200, "total_p": 129113123}, {"code": "T42015", "name": "스타필드시티위례", "open_date": "2026-07-01", "contract_margin": 0.22, "min_sales": null, "rent": null, "sales": [null, null, null, null, null, null, null], "total_sales": 0, "growth": [null, null, null, null, null, null, null], "total_growth": null, "rates": [null, null, null, null, null, null, null], "total_rate": null, "total_o": null, "total_p": null}, {"code": "T36205", "name": "이마트포항", "open_date": "2026-04-20", "contract_margin": 0.18, "min_sales": 22000000, "rent": 3960000, "sales": [0, 0, 0, 6, 29, 21, 25], "total_sales": 81, "growth": [null, null, null, null, null, null, null], "total_growth": null, "rates": [0, 0, 0, 0.23310825093760656, 0.24637475804912623, 0.27777986526235887, 0], "total_rate": 0.2581405049883537, "total_o": 81098900, "total_p": 60163989}, {"code": "T36411", "name": "신세계프리미엄기장", "open_date": "2024-09-01", "contract_margin": 0.17, "min_sales": 46200000, "rent": 7920000, "sales": [72, 76, 56, 47, 53, 29, 26], "total_sales": 359, "growth": [0.6363636363636364, 1.1714285714285715, 0.037037037037037035, -0.0784313725490196, 0.5588235294117647, -0.3829787234042553, 0.04], "total_growth": 0.23793103448275862, "rates": [0.24664409376181684, 0.2444912286708747, 0.28546263322940024, 0.3137371076197253, 0.23857777578146344, 0.4965690132185675, 0], "total_rate": 0.2910916374645509, "total_o": 359106400, "total_p": 254573530}], "시스티나": [{"code": "A41023", "name": "파르나스몰", "open_date": "2021-10-28", "contract_margin": 0.19, "min_sales": 114999500, "rent": 21849905, "sales": [90, 78, 109, 134, 122, 115, 86], "total_sales": 736, "growth": [-0.18181818181818182, -0.15217391304347827, -0.09166666666666666, 0.03076923076923077, -0.10948905109489052, -0.017094017094017096, -0.3008130081300813], "total_growth": -0.11459589867310012, "rates": [0.27331506518483073, 0.22446303607478502, 0.2317337151064165, 0.2055013161221242, 0.2179630136214461, 0, 0.23086002290418028], "total_rate": 0.22712701022132264, "total_o": 735609300, "total_p": 568532559}, {"code": "A42503", "name": "스퀘어원", "open_date": "2022-09-02", "contract_margin": 0.14, "min_sales": 39285714.28571428, "rent": 5500000, "sales": [118, 85, 110, 97, 108, 71, 71], "total_sales": 661, "growth": [0.09259259259259259, -0.06593406593406594, 0.25, -0.01020408163265306, 0.058823529411764705, 0.05970149253731343, 0.07575757575757576], "total_growth": 0.06451612903225806, "rates": [0.18146396885996496, 0.19548265166759982, 0.18500210963587504, 0.19362622265331653, 0.18870027585544735, 0, 0.21621510853082382], "total_rate": 0.19420726634799645, "total_o": 660662000, "total_p": 532356639}, {"code": "A41037", "name": "마곡원그로브", "open_date": "2025-05-30", "contract_margin": 0.14, "min_sales": null, "rent": null, "sales": [32, 33, 34, 26, 45, 29, 30], "total_sales": 230, "growth": [0, 0, 0, 0, 44, 1.0714285714285714, 0.5], "total_growth": 5.542857142857143, "rates": [0.27158253712808555, 0.2560500818941638, 0.229727462761516, 0.2432653832490571, 0.3389994181889243, 0, 0.23956039236055615], "total_rate": 0.2643526607866371, "total_o": 229806100, "total_p": 169056246}, {"code": "A42016", "name": "스타필드고양", "open_date": "2021-08-18", "contract_margin": 0.22, "min_sales": 216660690.9090909, "rent": 47665352, "sales": [208, 325, 244, 203, 250, 191, 171], "total_sales": 1591, "growth": [-0.48258706467661694, 0.08333333333333333, -0.3629242819843342, -0.07727272727272727, 0.11607142857142858, -0.045, -0.11398963730569948], "total_growth": -0.1716961498439126, "rates": [0.27678567919501096, 0.257666350951395, 0.2625981163628661, 0.2817053493617676, 0.2632642588151183, 0.30007141733769505, 0.3327226535147628], "total_rate": 0.27801470205024637, "total_o": 1590662500, "total_p": 1148434939}, {"code": "A42021", "name": "스타필드수원", "open_date": "2024-01-24", "contract_margin": 0.22, "min_sales": 96027827.27272727, "rent": 21126122, "sales": [104, 116, 185, 96, 116, 89, 78], "total_sales": 783, "growth": [-0.2, 0.16, 0.9680851063829787, -0.16521739130434782, 0.1262135922330097, -0.1188118811881188, -0.14285714285714285], "total_growth": 0.0681198910081744, "rates": [0.2752124135487064, 0.2717808931410657, 0.2596058737710255, 0.27695576127387467, 0.27093886052043736, 0.2994797365076113, 0.340824328758662], "total_rate": 0.2798644477815406, "total_o": 782849600, "total_p": 563757829}, {"code": "A42023", "name": "스타필드안성", "open_date": "2024-11-08", "contract_margin": 0.22, "min_sales": 101720700, "rent": 22378554, "sales": [103, 63, 59, 76, 65, 56, 57], "total_sales": 479, "growth": [-0.21374045801526717, 0.3695652173913043, 0.05357142857142857, 0.7272727272727273, 0.04838709677419355, 0.2727272727272727, 0.3902439024390244], "total_growth": 0.12971698113207547, "rates": [0.30123789134887347, 0.4729258665857674, 0.5014763675704916, 0.392878840811819, 0.4571864610645143, 0.532904445748727, 0.5296614529538781], "total_rate": 0.4384687130429553, "total_o": 478934400, "total_p": 268936650}, {"code": "A42028", "name": "스타필드시티부천", "open_date": "2025-11-21", "contract_margin": 0.21, "min_sales": 52454285.400000006, "rent": 11015399.934, "sales": [22, 18, 36, 20, 34, 21, 16], "total_sales": 168, "growth": [0, 0, 0, 0, 0, 0, 0], "total_growth": 0, "rates": [0.7200447039544766, 0.8953101218078143, 0.4522576266858369, 0.7757348214548994, 0.47911583134022695, 0.7597711969697675, 1.045853987171215], "total_rate": 0.6754297144104591, "total_o": 167656700, "total_p": 54416383}, {"code": "A42029", "name": "스타필드빌리지운정", "open_date": "2025-12-04", "contract_margin": 0.22, "min_sales": 39036000, "rent": 8587920, "sales": [78, 39, 70, 39, 57, 42, 39], "total_sales": 363, "growth": [0, 0, 0, 0, 0, 0, 0], "total_growth": 0, "rates": [0.2717628556186392, 0.3093031758713164, 0.27787117122040594, 0.3044470976178293, 0.28211593394137036, 0.2978848350178004, 0.31486804195412665], "total_rate": 0.2897391604953117, "total_o": 363267060, "total_p": 258014367}, {"code": "A41028", "name": "아이파크고척", "open_date": "2022-12-22", "contract_margin": 0.16, "min_sales": 20625000, "rent": 3300000, "sales": [21, 28, 18, 21, 36, 25, 13], "total_sales": 162, "growth": [0.3125, 0.47368421052631576, -0.3076923076923077, 0.10526315789473684, 0.8947368421052632, 0.041666666666666664, -0.48], "total_growth": 0.0945945945945946, "rates": [0.2930278408872117, 0.2679196083059734, 0.3305927524870541, 0.279933461153403, 0.22882574405974399, 0.2652068430340655, 0.46733629791829145], "total_rate": 0.28707860787353845, "total_o": 162338700, "total_p": 115734732}, {"code": "A41021", "name": "롯데몰월드점", "open_date": "2021-04-01", "contract_margin": 0.26, "min_sales": "특정매입", "rent": null, "sales": [147, 148, 166, 153, 172, 138, 124], "total_sales": 1048, "growth": [0, 0, 0, 0, 0, 0, 0], "total_growth": 0, "rates": [0.2600026450182099, 0.2600032215278939, 0.26000395475518556, 0.2600043062607411, 0.2600046674853196, 0.26000584140158767, 0.26000632585259464], "total_rate": 0.260004362497376, "total_o": 1047565100, "total_p": 775193604}, {"code": "A41031", "name": "롯데몰김포공항점", "open_date": "2023-03-06", "contract_margin": 0.25, "min_sales": "특정매입", "rent": null, "sales": [52, 62, 51, 39, 46, 45, 31], "total_sales": 326, "growth": [0, 0, 0, 0, 0, 0, 0], "total_growth": 0, "rates": [0.25000421397814865, 0.25000399624868264, 0.2500046750089604, 0.2500054975970597, 0.25000584294343764, 0.25000651651892913, 0.25000254045432324], "total_rate": 0.25000478240663715, "total_o": 325777400, "total_p": 244331492}, {"code": "A46401", "name": "현대커넥트부산", "open_date": "2024-09-06", "contract_margin": 0.15, "min_sales": null, "rent": null, "sales": [16, 12, 19, 18, 26, 15, 21], "total_sales": 126, "growth": [-0.6, -0.6470588235294118, -0.6041666666666666, -0.5609756097560976, -0.5, -0.53125, -0.19230769230769232], "total_growth": -0.5347985347985348, "rates": [0.2781903848737648, 0.3212283722837228, 0.2618592241869854, 0.2634734019283105, 0.22975951012188411, 0.2995582247279759, 0.25858423624592375], "total_rate": 0.2672750573317145, "total_o": 126021000, "total_p": 92338730}, {"code": "A44301", "name": "현대커넥트청주", "open_date": "2025-06-24", "contract_margin": 0.15, "min_sales": null, "rent": null, "sales": [50, 48, 54, 42, 56, 44, 42], "total_sales": 335, "growth": [0, 0, 0, 0, 0, 1.3157894736842106, -0.14285714285714285], "total_growth": 3.9411764705882355, "rates": [0.24272182848193813, 0.24424217656773306, 0.2159716711992995, 0.24253887700814925, 0.22038991494400995, 0.23638903120182708, 0.24490457217020933], "total_rate": 0.23433960602553394, "total_o": 334981100, "total_p": 256481761}, {"code": "A42027", "name": "롯데몰수원", "open_date": "2025-09-01", "contract_margin": 0.25, "min_sales": "특정매입", "rent": null, "sales": [63, 50, 59, 37, 40, 42, 27], "total_sales": 316, "growth": [0, 0, 0, 0, 0, 0, 0], "total_growth": 0, "rates": [0.250641590094951, 0.2502051840434407, 0.24920122670521572, 0.24991835888711833, 0.25000551585684616, 0.25000627269646636, 0.2500076956738242], "total_rate": 0.2500036197384178, "total_o": 316321200, "total_p": 237239755}, {"code": "A46402", "name": "롯데몰광복", "open_date": "2025-09-30", "contract_margin": 0.25, "min_sales": "특정매입", "rent": null, "sales": [18, 13, 26, 29, 25, 20, 17], "total_sales": 148, "growth": [0, 0, 0, 0, 0, 0, 0], "total_growth": 0, "rates": [0.24399949627131268, 0.2539484007695545, 0.24979706506013033, 0.25000534566307053, 0.25000390376035686, 0.24837760421828847, 0.24848344522797527], "total_rate": 0.2491913782969063, "total_o": 148351200, "total_p": 111383360}, {"code": "A42032", "name": "롯데몰수지점", "open_date": "2026-07-27", "contract_margin": 0.22, "min_sales": null, "rent": null, "sales": [null, null, null, null, null, null, null], "total_sales": null, "growth": [0, 0, 0, 0, 0, 0, 0], "total_growth": 0, "rates": [null, null, null, null, null, null, null], "total_rate": null, "total_o": null, "total_p": null}, {"code": "A42030", "name": "스타필드하남", "open_date": "2026-03-03", "contract_margin": 0.22, "min_sales": 118156500.00000003, "rent": 25994430.000000004, "sales": [0, 0, 0, 2, 132, 120, 78], "total_sales": 332, "growth": [0, 0, 0, 0, 0, 0, 0], "total_growth": 0, "rates": [0, 0, 0, 1.4120725382535093, 0.266831781804329, 0.2695895139269978, 0.3656118181864799], "total_rate": 0.2969220660136024, "total_o": 332100040, "total_p": 233492210}]};
+
+const BRAND_STYLE = {
+  '쉬즈미스': {accent:'#ec4899', bg:'#fdf2f8'},
+  '리스트':   {accent:'#06b6d4', bg:'#ecfeff'},
+  '시스티나': {accent:'#8b5cf6', bg:'#f5f3ff'}
+};
+const MONTHS = ['1월','2월','3월','4월','5월','6월','7월'];
+
+function fmtSales(v){
+  if(v===null || v===undefined) return '-';
+  return Math.round(v).toLocaleString('ko-KR');
+}
+function fmtRate(v){
+  if(v===null || v===undefined) return '-';
+  return (v*100).toFixed(1)+'%';
+}
+function fmtGrowth(v){
+  if(v===null || v===undefined) return '-';
+  const pct = v*100;
+  const sign = pct>0 ? '+' : '';
+  return sign+pct.toFixed(1)+'%';
+}
+function rateClass(v){
+  if(v===null||v===undefined) return '';
+  if(v>=0.40) return 'rate-high';
+  return '';
+}
+
+function computeBrandKpi(stores){
+  // 브랜드 총 수수료율은 수수료율의 평균(가중포함)이 아니라
+  // O열(총매출) 합계와 P열(총수금) 합계로 직접 계산: (총매출-총수금)/총매출
+  let totalSales = 0, totalO = 0, totalP = 0;
+  stores.forEach(s=>{
+    totalSales += s.total_sales||0;
+    totalO += s.total_o||0;
+    totalP += s.total_p||0;
+  });
+  const avgRate = totalO? (totalO-totalP)/totalO : 0;
+  return {storeCount:stores.length, totalSales, avgRate};
+}
+
+function render(){
+  const brands = Object.keys(DATA);
+  let overallSales=0, overallComm=0, overallStores=0;
+  const brandKpis = {};
+  brands.forEach(b=>{
+    const k = computeBrandKpi(DATA[b]);
+    brandKpis[b]=k;
+    overallSales += k.totalSales;
+    overallComm += k.totalSales*k.avgRate;
+    overallStores += k.storeCount;
+  });
+  const overallRate = overallSales? overallComm/overallSales : 0;
+
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="label">전체 매장수</div><div class="value">${overallStores}개</div></div>
+    <div class="kpi"><div class="label">누계 합계 매출</div><div class="value blue">${fmtSales(overallSales)}백만원</div></div>
+    <div class="kpi"><div class="label">전체 총 수수료율</div><div class="value orange">${fmtRate(overallRate)}</div></div>
+    <div class="kpi"><div class="label">브랜드 수</div><div class="value">${brands.length}개</div></div>
+  `;
+
+  const container = document.getElementById('brandSections');
+  container.innerHTML='';
+
+  brands.forEach((brand, idx)=>{
+    const style = BRAND_STYLE[brand] || {accent:'#374151', bg:'#f3f4f6'};
+    const k = brandKpis[brand];
+    const stores = DATA[brand];
+
+    const section = document.createElement('div');
+    section.className = 'brand-section' + (idx===0 ? ' open' : '');
+    section.style.setProperty('--accent', style.accent);
+    section.style.setProperty('--accent-bg', style.bg);
+
+    let rowsHtml = '';
+    stores.forEach(s=>{
+      let salesCells = '';
+      let growthCells = '';
+      let rateCells = '';
+      for(let i=0;i<7;i++){
+        salesCells += `<td class="num">${fmtSales(s.sales[i])}</td>`;
+        growthCells += `<td class="num">${fmtGrowth(s.growth[i])}</td>`;
+        rateCells += `<td class="num ${rateClass(s.rates[i])}">${fmtRate(s.rates[i])}</td>`;
+      }
+      rowsHtml += `
+        <tr class="sales-row">
+          <td class="name" rowspan="3">${s.name}<span class="code-sub">${s.code}</span></td>
+          <td class="rate-label">매출</td>
+          ${salesCells}
+          <td class="num total-col">${fmtSales(s.total_sales)}</td>
+        </tr>
+        <tr class="rate-row">
+          <td class="rate-label">신장률</td>
+          ${growthCells}
+          <td class="num total-col">${fmtGrowth(s.total_growth)}</td>
+        </tr>
+        <tr class="rate-row">
+          <td class="rate-label">수수료율</td>
+          ${rateCells}
+          <td class="num total-col ${rateClass(s.total_rate)}">${fmtRate(s.total_rate)}</td>
+        </tr>
+      `;
+    });
+
+    section.innerHTML = `
+      <div class="unit-note">(단위:백만, %, VAT+)</div>
+      <div class="brand-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="brand-title"><span class="dot"></span>${brand}</div>
+        <div class="brand-stats">
+          <span>매장수 <b>${k.storeCount}개</b></span>
+          <span>누계 매출 <b>${fmtSales(k.totalSales)}백만원</b></span>
+          <span>총 수수료율 <b class="rate">${fmtRate(k.avgRate)}</b></span>
+          <span class="chevron">▾</span>
+        </div>
+      </div>
+      <div class="brand-body">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr class="grp">
+                <th>매장</th>
+                <th>구분</th>
+                ${MONTHS.map(m=>`<th>${m}</th>`).join('')}
+                <th>합계</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    container.appendChild(section);
+  });
+}
+
+render();
+</script>
+</body>
+</html>
